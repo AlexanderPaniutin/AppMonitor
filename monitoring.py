@@ -7,7 +7,7 @@ import win32gui
 import pandas as pd
 import numpy as np
 from time import sleep
-from datetime import date
+from datetime import date, timedelta
 
 def date_():
     return f'{date.today().strftime("%Y%m%d")}'
@@ -58,7 +58,9 @@ def apps_stopwatch(data={}):
         
         # print log
 
-        print(data)
+        data_to_show = data.copy()
+        data_to_show['AppTime'] = data_to_show['AppTime'].apply(lambda x: str(timedelta(seconds = x)))
+        print(data_to_show)
 
         sleep(1)
         count_seconds += 1
