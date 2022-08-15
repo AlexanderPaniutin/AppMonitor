@@ -1,6 +1,6 @@
-# Monitoring opened programs
+# Monitoring foreground programs
 
-from operator import index
+
 import os
 import signal
 import win32gui
@@ -9,8 +9,10 @@ import numpy as np
 from time import sleep
 from datetime import date, timedelta
 
+
 def date_():
     return f'{date.today().strftime("%Y%m%d")}'
+
 
 DF = pd.core.frame.DataFrame
 DATE = date_()
@@ -36,30 +38,28 @@ def get_clean_title(title):
 
 
 def apps_stopwatch(data={}):
-    # data = {'app_name':*app_time*}
-    
     count_seconds = 0
     while True:
-        
+        # Save data every minute
         if count_seconds == 60:
             if DATE != date_:
                 LOGFILE = f'logs/log_{date_()}.json'
-
             save_data(data)
             count_seconds = 0
 
+        # Clean title
         title = get_clean_title(get_foreground())
 
+        # Add app in list ore add time to that app if already in list
         if not data[data['AppName'] == title].index.empty:
             idx = data[data['AppName'] == title].index
             data.loc[idx, 'AppTime'] += 1
         else:
             data = data.append(pd.DataFrame([[title, 1]], columns=['AppName', 'AppTime']), ignore_index=True)
-        
-        # print log
 
+        # Show data in terminal
         data_to_show = data.copy()
-        data_to_show['AppTime'] = data_to_show['AppTime'].apply(lambda x: str(timedelta(seconds = x)))
+        data_to_show['AppTime'] = data_to_show['AppTime'].apply(lambda x: str(timedelta(seconds=x)))
         print(data_to_show)
 
         sleep(1)
@@ -80,18 +80,12 @@ def save_data(data: DF):
 
 
 def main():
-    # Add handler
+    # Add exit handler 
     signal.signal(signal.SIGINT, handler)
 
     data = load_data()
-    if data.empty:
-        print('No data for today')
-
     apps_stopwatch(data)
-        
-    df = pd.DataFrame([['app1', 1], ['app2', 12]], columns=['AppName', 'AppTime'])
-    #save_data(df)
-    
+
 
 if __name__=="__main__":
     main()
