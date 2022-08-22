@@ -16,7 +16,7 @@ def date_():
 
 DF = pd.core.frame.DataFrame
 DATE = date_()
-LOGFILE = f'logs/log_{date_()}.json'
+LOGFILE = os.getcwd().replace('\\', '/') + '/logs/log_' +date_()+'.json'
 
 
 def handler(signum, frame):
@@ -43,7 +43,7 @@ def apps_stopwatch(data={}):
         # Save data every minute
         if count_seconds == 60:
             if DATE != date_:
-                LOGFILE = f'logs/log_{date_()}.json'
+                LOGFILE = os.getcwd().replace('\\', '/') + '/logs/log_' +date_()+'.json'
             save_data(data)
             count_seconds = 0
 

@@ -2,7 +2,7 @@
 
 import pandas as pd
 from datetime import date, timedelta
-
+import os
 
 def date_():
     '''
@@ -11,7 +11,7 @@ def date_():
     return f'{date.today().strftime("%Y%m%d")}'
 
 
-LOGFILE = f'logs/log_{date_()}.json'
+LOGFILE = os.getcwd().replace('\\', '/') + '/logs/log_' +date_()+'.json'
 
 
 def show_log(data):
@@ -25,7 +25,7 @@ def show_log(data):
 
 def read(logfile=LOGFILE):
     '''
-    Takes file lokation and returns data from file
+    Takes file location and returns data from file
     '''
     try:
         data = pd.read_json(LOGFILE)
@@ -36,6 +36,7 @@ def read(logfile=LOGFILE):
 
 
 def main():
+    print(LOGFILE)
     data = read()
     show_log(data)
 
