@@ -1,24 +1,35 @@
-from datetime import timedelta
 import matplotlib.pylab as plt
-from  matplotlib.axes import Axes 
-from matplotlib.ticker import FuncFormatter, MultipleLocator
+from matplotlib.ticker import FuncFormatter
 import pandas as pd
 import os
 
 
-# Get one big dataframe from all log files
-def get_all_data(files):
-    result = pd.DataFrame([],columns=['AppName', 'AppTime'])
+PATH = '' # Path where scripts are located, example - 'C:/Users/User/.../monitoring-script/'
+LAST_DAYS_SHOW = 30 # Number of last log files that will be used 
+NUMBER_APPS = 7 # Number of top used programs that will be showed 
+
+
+def all_log_data(files):
+    """
+    Get all data from all log files into one dataframe
+    """
+    data = pd.DataFrame([],columns=['AppName', 'AppTime'])
     for file in files:
-        result = pd.concat([result, pd.read_json(f'logs/{file}')])
-    result = result.groupby(['AppName'])['AppTime'].apply(sum).reset_index()
-    result = result.sort_values('AppTime', ignore_index=True, ascending=True)
+        data = pd.concat([data, pd.read_json(f'{PATH}logs/{file}')])
+    data = data.groupby(['AppName'])['AppTime'].apply(sum).reset_index()
+    data = data.sort_values('AppTime', ignore_index=True, ascending=False)
     
-    #result['AppTime'] = result['AppTime'].apply(lambda x: str(timedelta(seconds=x)))
-    return result
+    return data
+
+
+def get_app_data(files):
+    pass
 
 
 def format_func(x, pos):
+    '''
+    Function changes seconds into hh:mm:ss format for matplotlib
+    '''
     hours = int(x//3600)
     minutes = int((x%3600)//60)
     seconds = int(x%60)
@@ -27,38 +38,36 @@ def format_func(x, pos):
     return "{:d}:{:02d}:{:02d}".format(hours, minutes, seconds)
 
 
-def last_apps_graph(all_data, top_apps=7):
-    # Show top 7 apps by time
-    data_to_show = all_data[-top_apps:]
+def last_apps_graph(all_data):
+    """
+    Show plot label of most frequently used apps
+    """
+    data_to_show = all_data[:NUMBER_APPS]
 
     f = plt.figure()
     ax = f.add_subplot(1,1,1)
     ax.bar(data_to_show['AppName'], data_to_show['AppTime'])
 
     ax.yaxis.set_major_formatter(FuncFormatter(format_func))
-    # this locates y-ticks at the hours
-    #ax.yaxis.set_major_locator(MultipleLocator(base=3600))
-    # this ensures each bar has a 'date' label
-    #ax.xaxis.set_major_locator(MultipleLocator(base=1))
-
     plt.xticks(rotation=90)
     plt.tight_layout()
     plt.show()
 
 
-def show_app_graph(date):
+def show_app_graph(all_data):
+    """
+    Show plot label of some app usage 
+    """
     pass
 
 
 def main():
-    # Get all logs
-    files = os.listdir('logs/')
-    
-    # Get last 30 days data
-    files = files[-30:]
+    # Prepare the data that will be used  
+    files = os.listdir(f'{PATH}logs/')
+    files = files[:LAST_DAYS_SHOW]
+    all_data = all_log_data(files)
 
-    all_data = get_all_data(files)
-
+    # Terminal UI
     while True:
         print('[1] - Show graph with most using apps')
         print('[2] - Show graph of one app')
@@ -73,8 +82,8 @@ def main():
             exit()
         
         elif ent == '2':
-            ent = input('Enter date in format yyyymmdd: ')
-            show_app_graph(ent)
+            show_app_graph(all_data)
+            exit()
 
 
 if __name__=="__main__":
