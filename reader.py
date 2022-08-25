@@ -32,13 +32,16 @@ def read(logfile=LOGFILE):
         return data
     except:
         print('There no log file for today')
+        input('Press ENTER to quit')
         exit()
 
 
 def main():
     print(LOGFILE)
+    print(type(LOGFILE))
     data = read()
     show_log(data)
+    input('Press ENTER to quit')
 
 
 if __name__=="__main__":
