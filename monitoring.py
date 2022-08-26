@@ -65,7 +65,7 @@ class AppMonitorService:
     
 
   def run(self):
-    fallback_cnt = 10
+    fallback_cnt = 60
     
     last_report_time = time.time()
     report_period_sec = 5
@@ -79,7 +79,7 @@ class AppMonitorService:
         last_report_time = time.time()
 
       if fallback_cnt <= 0:
-        fallback_cnt = 10
+        fallback_cnt = 60
         self._store_report()
         continue
         
