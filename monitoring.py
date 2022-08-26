@@ -4,11 +4,144 @@
 import os
 import signal
 import win32gui
+import json
+'''
 import pandas as pd
 import numpy as np
-from time import sleep
+'''
+import time
 from datetime import date, timedelta
 
+
+PATH = '' # Path where scripts are located, example - 'C:/Users/User/.../monitoring-script/'
+
+
+class AppMonitorService:
+  '''
+  Current service is watching what application
+  is in foreground and for how long.
+  The report is written into the file specified
+  in the report_path. If None, the report will be
+  in the same directory as the current scritp.
+  '''
+
+  def __init__(self, report_path=None):
+    self.report_path = report_path
+    self.keep_running = False
+    # self.run_thread = threading.Thread(target=self._run)
+    self.check_delay = 1  # check every second
+    self.store_delay = 60 # store every minute
+    
+    # the main report holder as app_name : usage_secs.
+    self.report = {}
+  
+  
+  def start(self):
+    '''
+    Starts the monitoring service.
+    '''
+    self.keep_running = True
+    self._load_report()
+    # self.run_thread.start()
+  
+  
+  def stop(self):
+    '''
+    Stops the monitoring service.
+    '''
+    self.keep_running = False
+    # self.run_thread.join()
+  
+  
+  def print_report(self):
+    '''
+    Prints the current report to stdout
+    '''
+    
+    for app_name in self.report.keys():
+      print("-" * 80)
+      print("App Time")
+      print("%20s %5d" % (app_name, self.report[app_name]))
+    
+
+  def run(self):
+    fallback_cnt = 10
+    
+    last_report_time = time.time()
+    report_period_sec = 5
+    while self.keep_running:
+      
+      self._register_app()
+      time.sleep(self.check_delay)
+      
+      if time.time() - last_report_time > report_period_sec:
+        self.print_report()
+        last_report_time = time.time()
+
+      if fallback_cnt <= 0:
+        fallback_cnt = 10
+        self._store_report()
+        continue
+        
+      fallback_cnt -= 1
+
+
+  def _load_report(self):
+    '''
+    Tries to load the report from today.
+    '''
+    try:
+        with open(f'{PATH}logs/log_{date_()}.json', 'r') as file:
+            self.report = json.load(file)
+        print('Loaded report:', self.report)
+    except:
+        print('There no log file for today')    
+
+
+  def _store_report(self):
+    '''
+    Generates and stores a report
+    '''
+    with open(f'{PATH}logs/log_{date_()}.json', 'w') as file:
+        file.write(json.dumps(self.report))
+    print('\n Report saved! \n')
+
+
+  def _register_app(self):
+    app_name = self._get_fg_app_name()
+    if app_name is None:
+      return
+     
+    old_time = self.report.get(app_name, 0)
+    self.report[app_name] = old_time + 1
+
+
+  def _get_fg_app_name(self):
+    '''
+    Returns a current foreground application window name unparsed.
+    '''
+    w = win32gui
+    title = w.GetWindowText(w.GetForegroundWindow())
+  
+    if title == '':
+        return None
+    app_name = title.split(' - ')[-1]
+    return app_name
+
+
+def date_():
+    return f'{date.today().strftime("%Y%m%d")}'
+
+
+app_monitor_service = AppMonitorService()
+
+
+def handler(signum, frame):
+    print("Handling interrupt ", signum)
+    app_monitor_service.stop()
+
+
+"""
 
 def date_():
     return f'{date.today().strftime("%Y%m%d")}'
@@ -78,13 +211,16 @@ def load_data() -> DF:
 def save_data(data: DF):
     data.to_json(LOGFILE, orient='records')
 
+"""
 
 def main():
+    print("Hello AppMonitorService!")
     # Add exit handler 
     signal.signal(signal.SIGINT, handler)
 
-    data = load_data()
-    apps_stopwatch(data)
+    app_monitor_service.start()
+    app_monitor_service.run()
+    print("Bye!!!!!")
 
 
 if __name__=="__main__":
