@@ -138,6 +138,7 @@ app_monitor_service = AppMonitorService()
 
 def handler(signum, frame):
     print("Handling interrupt ", signum)
+    app_monitor_service._store_report()
     app_monitor_service.stop()
 
 
