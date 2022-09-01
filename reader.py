@@ -54,6 +54,8 @@ def qt_window():
     window.setWindowTitle(title)
 
     report = load_report()
+    # Sort report values
+    report = dict(sorted(report.items(), key=lambda x: x[1], reverse=True))
     yval = list(report.values())
     yval_copy = yval.copy()
     ylab = list(map(lambda x: format_func(x), yval_copy))
@@ -81,7 +83,6 @@ def qt_window():
     window.showGrid(y=True)
 
 
-
 def main():
     qt_window()
     
@@ -90,7 +91,6 @@ def main():
         QApplication.instance().exec_()
 
 
-# main method
 if __name__ == '__main__':
     main()
 
