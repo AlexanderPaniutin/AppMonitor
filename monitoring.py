@@ -105,7 +105,7 @@ class AppMonitorService:
             print('There no log file for today')    
 
 
-    def _store_report(self):
+      def _store_report(self):
         '''
         Generates and stores a report
         '''
