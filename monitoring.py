@@ -125,7 +125,7 @@ class AppMonitorService:
   
     if title == '':
         return None
-    app_name = title.split(' - ')[-1]
+    app_name = title.replace("/", " ").replace("-", " ").split(" ")[-1]
     return app_name
 
 
