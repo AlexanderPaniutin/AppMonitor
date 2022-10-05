@@ -85,7 +85,7 @@ class AppMonitorService:
                 self._store_report()
                 if self.current_date != date_():
                     self.report = {}
-            continue
+                continue
         
             fallback_cnt -= 1
 
