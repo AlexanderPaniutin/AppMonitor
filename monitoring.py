@@ -41,7 +41,7 @@ class AppMonitorService:
         self.report = {}
   
 
-      def start(self):
+    def start(self):
         '''
         Starts the monitoring service.
         '''
@@ -50,7 +50,7 @@ class AppMonitorService:
         # self.run_thread.start()
 
 
-      def stop(self):
+    def stop(self):
         '''
         Stops the monitoring service.
         '''
@@ -58,7 +58,7 @@ class AppMonitorService:
         # self.run_thread.join()
       
       
-      def print_report(self):
+    def print_report(self):
         '''
         Prints the current report to stdout
         '''
@@ -105,7 +105,7 @@ class AppMonitorService:
             print('There no log file for today')    
 
 
-      def _store_report(self):
+    def _store_report(self):
         '''
         Generates and stores a report
         '''
