@@ -41,24 +41,24 @@ class AppMonitorService:
         self.report = {}
   
 
-    def start(self):
+      def start(self):
         '''
         Starts the monitoring service.
         '''
         self.keep_running = True
         self._load_report()
         # self.run_thread.start()
-  
-  
-    def stop(self):
+
+
+      def stop(self):
         '''
         Stops the monitoring service.
         '''
         self.keep_running = False
         # self.run_thread.join()
-  
-  
-    def print_report(self):
+      
+      
+      def print_report(self):
         '''
         Prints the current report to stdout
         '''
