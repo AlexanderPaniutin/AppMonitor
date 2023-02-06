@@ -4,7 +4,10 @@
 import os
 import signal
 import win32gui
+import win32process
 import json
+import psutil
+
 '''
 import pandas as pd
 import numpy as np
@@ -43,8 +46,8 @@ class AppMonitorService:
     self.keep_running = True
     self._load_report()
     # self.run_thread.start()
-  
-  
+
+
   def stop(self):
     '''
     Stops the monitoring service.
@@ -135,12 +138,22 @@ class AppMonitorService:
     '''
     Returns a current foreground application window name unparsed.
     '''
-    w = win32gui
-    title = w.GetWindowText(w.GetForegroundWindow())
+
+    front_win = win32gui.GetForegroundWindow()
+    thread_id, proc_id = win32process.GetWindowThreadProcessId(front_win)
+    proc_name = psutil.Process(proc_id)
+    title = proc_name.name()
+    # title = w.GetWindowText(w.GetForegroundWindow())
   
     if title == '':
         return None
     app_name = title.split(' - ')[-1]
+
+    # Custom handling for Google Chrome to include the tab name.
+    if title.endswith("Google Chrome"):
+        subtitles = title.split(' - ')
+        app_name = subtitles[-1] + " " + subtitles[-2]
+
     return app_name
 
 
