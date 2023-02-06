@@ -1,0 +1,6 @@
+numpy==1.23.2
+PyQt5==5.15.7
+pyqtgraph==0.12.4
+matplotlib
+pywin32
+psutil

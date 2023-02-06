@@ -4,7 +4,10 @@
 import os
 import signal
 import win32gui
+import win32process
 import json
+import psutil
+
 '''
 import pandas as pd
 import numpy as np
@@ -45,16 +48,16 @@ class AppMonitorService:
         self.keep_running = True
         self._load_report()
         # self.run_thread.start()
-  
-  
+
+
     def stop(self):
         '''
         Stops the monitoring service.
         '''
         self.keep_running = False
         # self.run_thread.join()
-  
-  
+      
+      
     def print_report(self):
         '''
         Prints the current report to stdout
@@ -106,9 +109,24 @@ class AppMonitorService:
         '''
         Generates and stores a report
         '''
-        with open(f'{PATH}logs/log_{date_()}.json', 'w') as file:
+
+        # Find out where the current script exists.
+        curr_fpath = os.path.dirname(os.path.realpath(__file__))
+
+        # Make a path where the logs to be stored.
+        log_fname = f'log_{date_()}.json'
+        log_dir = os.path.join(curr_fpath, 'logs')
+        log_fpath = os.path.join(log_dir, log_fname)
+        #print('log dir  ', log_dir)
+        #print('log fpath', log_fpath)
+
+        # Make sure path to logs exist. Create if not.
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+        with open(log_fpath, 'w') as file:
             file.write(json.dumps(self.report))
-        print('\n Report saved! \n')
+        print(f'\n Report saved into {log_fpath}\n')
 
 
     def _register_app(self):
@@ -124,12 +142,22 @@ class AppMonitorService:
         '''
         Returns a current foreground application window name unparsed.
         '''
-        w = win32gui
-        title = w.GetWindowText(w.GetForegroundWindow())
-  
+
+        front_win = win32gui.GetForegroundWindow()
+        thread_id, proc_id = win32process.GetWindowThreadProcessId(front_win)
+        proc_name = psutil.Process(proc_id)
+        title = proc_name.name()
+        # title = w.GetWindowText(w.GetForegroundWindow())
+      
         if title == '':
             return None
-        app_name = title.replace("/", " ").replace("-", " ").split(" ")[-1]
+        app_name = title.split(' - ')[-1]
+
+        # Custom handling for Google Chrome to include the tab name.
+        if title.endswith("Google Chrome"):
+            subtitles = title.split(' - ')
+            app_name = subtitles[-1] + " " + subtitles[-2]
+
         return app_name
 
 

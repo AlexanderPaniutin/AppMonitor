@@ -1,18 +1,16 @@
 # Read logs for today
-from datetime import date, timedelta
+from datetime import date
 import sys
 import json
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import QApplication
-import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore
-"""
-import pandas as pd
-import os
-"""
+# from PyQt5.QtGui import *
+# from PyQt5.QtWidgets import QApplication
+# import pyqtgraph as pg
+# from pyqtgraph.Qt import QtCore
 
 PATH = '' # Path where scripts are located, example - 'C:/Users/User/.../monitoring-script/'
 
+GAMES_LIMIT_MINS: int = 1 * 60
+PER_APP_LIMIT: int = 2 * 60
 
 def format_func(x):
     '''
@@ -26,26 +24,24 @@ def format_func(x):
     return "{:d}:{:02d}:{:02d}".format(hours, minutes, seconds)
 
 
-def date_():
-    '''
-    Returns date in format yyyymmdd
-    '''
-    return f'{date.today().strftime("%Y%m%d")}'
-
-
-def load_report():
+def load_report(day):
     '''
     Tries to load the report from today.
     '''
+
+    formatted_day = day.strftime("%Y%m%d")
+    log_fpath = f'{PATH}logs/log_{formatted_day}.json'
     try:
-        with open(f'{PATH}logs/log_{date_()}.json', 'r') as file:
+        with open(log_fpath, 'r') as file:
             report = json.load(file)
         return report
-    except:
-        print('There no log file for today')
-        exit()
+    except Exception as ex:
+        # TODO: Use logging to mark the next statement as an ERR.
+        print('Failed to load the report for %s', formatted_day)
+        # Pass exception along.
+        raise ex
 
-
+'''
 def qt_window():
     # creating a pyqtgraph plot window
     window = pg.plot()
@@ -53,48 +49,20 @@ def qt_window():
     title = "App Using data for today"
     window.setWindowTitle(title)
 
-    report = load_report()
-    # Sort report values
-    report = dict(sorted(report.items(), key=lambda x: x[1], reverse=True))
-    report = dict(list(report.items())[:10])
-    yval = list(report.values())
-    yval_copy = yval.copy()
-    ylab = list(map(lambda x: format_func(x), yval_copy))
     
-    xlab = list(report.keys())
-    xval = list(range(1,len(xlab)+1))
-
-    y_ticks = []
-    for i, item in enumerate(ylab):
-        y_ticks.append( (yval[i], item))
-    y_ticks = [y_ticks]
-
-    x_ticks=[]
-    for i, item in enumerate(xlab):
-        x_ticks.append( (xval[i], item) )
-    x_ticks = [x_ticks]
-
-    bargraph = pg.BarGraphItem(x=xval, height=yval, width=0.5, brush='g')
-    window.addItem(bargraph)
-    ax = window.getAxis('bottom')
-    ax.setTicks(x_ticks)
-
-    ay = window.getAxis('left')
-    ay.setTicks(y_ticks)
-    window.showGrid(y=True)
+'''
 
 
 def main():
-    qt_window()
-    
-    # Start Qt event loop unless running in interactive mode or using
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QApplication.instance().exec_()
-
+    # Load report for the current day.
+    report = load_report(date.today())
+    # Sort the report by time used.
+    report = dict(sorted(report.items(), key=lambda x: x[1], reverse=True))
+    # Sort report values
+    print("Report loaded as %s", json.dumps(report, indent=2))
 
 if __name__ == '__main__':
     main()
-
 
 """
 LOGFILE = os.getcwd().replace('\\', '/') + '/logs/log_' +date_()+'.json'
