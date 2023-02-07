@@ -1,3 +1,8 @@
+'''
+Limit enfircer reads the app monitor report and applies configured
+policy based on the settings file (TBD).
+'''
+
 # Read logs for today
 from datetime import date
 import sys
